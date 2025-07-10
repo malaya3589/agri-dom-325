@@ -46,8 +46,6 @@ export function getTabsConfig({
             label: 'Catalogue', 
             content: (
               <ProcedureCatalogTab 
-                searchTerm={searchTerm} 
-                setSearchTerm={setSearchTerm} 
                 onAddProcedure={onAddProcedure}
                 onOpenApprovalQueue={onOpenApprovalQueue}
               />
@@ -126,8 +124,6 @@ export function getTabsConfig({
             label: 'Catalogue', 
             content: (
               <ProcedureCatalogTab 
-                searchTerm={searchTerm} 
-                setSearchTerm={setSearchTerm} 
                 onAddProcedure={onAddProcedure}
                 onOpenApprovalQueue={onOpenApprovalQueue}
               />
