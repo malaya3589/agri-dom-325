@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';  
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bot, Search, Clock, FileText, BarChart3, Users, Sparkles, History, Brain, Zap, Target, TrendingUp, ShoppingCart, Activity } from 'lucide-react';
+import { Bot, Search, Clock, FileText, BarChart3, Users, Sparkles, History, Brain, Zap, Target, TrendingUp } from 'lucide-react';
 import { SectionHeader } from './common/SectionHeader';
 import { ConversationalAIAssistant } from './ai/ConversationalAIAssistant';
 import { PredictiveJuridicalAnalysis } from './ai/PredictiveJuridicalAnalysis';
@@ -61,15 +61,6 @@ export function AILegalAssistant() {
     }, 2000);
   };
 
-  const handleFeatureSelect = (feature: string) => {
-    // Scroll vers le contenu correspondant sans aller à la fin de la page
-    const element = document.getElementById(`feature-${feature}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    setActiveTab(feature);
-  };
-
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <SectionHeader
@@ -78,51 +69,6 @@ export function AILegalAssistant() {
         icon={Bot}
         iconColor="text-green-600"
       />
-
-      {/* Nouveaux rectangles modernes redessinés */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card 
-          className="group relative overflow-hidden border-2 border-green-200 hover:border-green-400 transition-all duration-300 cursor-pointer bg-gradient-to-br from-green-50 to-white hover:shadow-lg"
-          onClick={() => handleFeatureSelect('assistant')}
-        >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-xl mb-4 group-hover:bg-green-200 transition-colors">
-              <ShoppingCart className="w-6 h-6 text-green-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Assistant IA Classique</h3>
-            <p className="text-sm text-gray-600">Recherche intelligente et suggestions contextuelles</p>
-            <div className="absolute inset-0 bg-green-500 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className="group relative overflow-hidden border-2 border-purple-200 hover:border-purple-400 transition-all duration-300 cursor-pointer bg-gradient-to-br from-purple-50 to-white hover:shadow-lg"
-          onClick={() => handleFeatureSelect('predictive')}
-        >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-purple-100 rounded-xl mb-4 group-hover:bg-purple-200 transition-colors">
-              <Activity className="w-6 h-6 text-purple-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Analyse Prédictive Juridique</h3>
-            <p className="text-sm text-gray-600">Prédiction d'issues, évaluation de risques, détection d'anomalies</p>
-            <div className="absolute inset-0 bg-purple-500 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className="group relative overflow-hidden border-2 border-blue-200 hover:border-blue-400 transition-all duration-300 cursor-pointer bg-gradient-to-br from-blue-50 to-white hover:shadow-lg"
-          onClick={() => handleFeatureSelect('nlp')}
-        >
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-xl mb-4 group-hover:bg-blue-200 transition-colors">
-              <Zap className="w-6 h-6 text-blue-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">NLP Juridique Spécialisé</h3>
-            <p className="text-sm text-gray-600">Extraction d'entités, résumés automatiques, classification avancée</p>
-            <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-5 transition-opacity duration-300"></div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Onglets principaux pour les différentes fonctionnalités */}
       <Card>
@@ -155,7 +101,7 @@ export function AILegalAssistant() {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsContent value="assistant" className="space-y-6" id="feature-assistant">
+        <TabsContent value="assistant" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Assistant conversationnel principal */}
             <div className="lg:col-span-3">
@@ -307,11 +253,11 @@ export function AILegalAssistant() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="predictive" id="feature-predictive">
+        <TabsContent value="predictive">
           <PredictiveJuridicalAnalysis />
         </TabsContent>
 
-        <TabsContent value="nlp" id="feature-nlp">
+        <TabsContent value="nlp">
           <SpecializedNLP />
         </TabsContent>
 
