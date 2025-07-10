@@ -11,7 +11,7 @@ import { LegalTextsSearchActions } from './LegalTextsSearchActions';
 import { LegalTextCard } from './LegalTextCard';
 import { LegalTextsEmptyState } from './LegalTextsEmptyState';
 import { useLegalTextsData } from './hooks/useLegalTextsData';
-import { TabFormField } from '@/components/common/TabFormField';
+import { TabSearchField } from '@/components/common/TabSearchField';
 
 interface LegalTextsCatalogTabProps {
   onAddLegalText?: () => void;
@@ -32,7 +32,6 @@ export function LegalTextsCatalogTab({ onAddLegalText, onOpenApprovalQueue }: Le
     console.log('Filters changed:', newFilters);
   };
 
-  // Fonction pour gérer l'ouverture de la file d'approbation
   const handleOpenApprovalQueue = () => {
     console.log('Opening approval queue...');
     if (onOpenApprovalQueue) {
@@ -40,8 +39,28 @@ export function LegalTextsCatalogTab({ onAddLegalText, onOpenApprovalQueue }: Le
     }
   };
 
+  const handleTabSearch = (query: string) => {
+    setSearchTerm(query);
+    console.log('Tab search:', query);
+  };
+
   return (
     <div className="space-y-6">
+      {/* Nouveau champ de recherche avec reconnaissance vocale */}
+      <TabSearchField
+        placeholder="Rechercher des textes juridiques..."
+        onSearch={handleTabSearch}
+        suggestions={[
+          "Code civil algérien",
+          "Loi sur l'investissement 2022",
+          "Décret exécutif",
+          "Ordonnance présidentielle",
+          "Code de procédure civile",
+          "Loi de finances",
+          "Code pénal",
+          "Code du travail"
+        ]}
+      />
 
       {/* Statistiques */}
       <LegalTextsStatistics filteredTexts={filteredTexts} />

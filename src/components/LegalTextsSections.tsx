@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
 import { FileText } from 'lucide-react';
-import { StandardizedSectionTemplate } from './common/StandardizedSectionTemplate';
 import { LegalTextsTabs } from './LegalTextsTabs';
 import { LegalTextFormEnhanced } from './LegalTextFormEnhanced';
 import { useModals } from './modals/ModalManager';
+import { SectionHeader } from './common/SectionHeader';
 
 interface LegalTextsSectionsProps {
   section: string;
@@ -92,20 +92,19 @@ export function LegalTextsSections({ section, language }: LegalTextsSectionsProp
   }
 
   return (
-    <StandardizedSectionTemplate
-      icon={FileText}
-      title={getSectionTitle()}
-      description={getSectionDescription() || ''}
-      section={section}
-      searchContext="legal"
-      searchPlaceholder="Rechercher des textes juridiques..."
-      onSearch={(query) => console.log('Recherche:', query)}
-    >
+    <div className="space-y-6">
+      <SectionHeader
+        title={getSectionTitle()}
+        description={getSectionDescription() || ''}
+        icon={FileText}
+        iconColor="text-blue-600"
+      />
+      
       <LegalTextsTabs 
         section={section} 
         onAddLegalText={handleAddLegalText}
         onOCRTextExtracted={handleOCRTextExtracted}
       />
-    </StandardizedSectionTemplate>
+    </div>
   );
 }
