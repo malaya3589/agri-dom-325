@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +32,7 @@ export function DirectoriesSection() {
           </TabsTrigger>
         </TabsList>
 
+        
         <TabsContent value="institutions" className="mt-6 space-y-6">
           <div className="flex gap-3 justify-center mb-6">
             <Button className="gap-2">
@@ -457,6 +457,18 @@ export function DirectoriesSection() {
         </TabsContent>
 
         <TabsContent value="avocats" className="mt-6 space-y-6">
+          {/* Boutons d'action ajoutés */}
+          <div className="flex gap-3 justify-center mb-6">
+            <Button className="gap-2">
+              <UserCheck className="w-4 h-4" />
+              Ajouter
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Enrichir
+            </Button>
+          </div>
+
           <div className="text-center mb-6">
             <h3 className="text-lg font-semibold">Recherchez des avocats par spécialité et région</h3>
           </div>
@@ -467,6 +479,7 @@ export function DirectoriesSection() {
             showActions={true}
           />
 
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader>
@@ -551,6 +564,18 @@ export function DirectoriesSection() {
         </TabsContent>
 
         <TabsContent value="notaires" className="mt-6 space-y-6">
+          {/* Boutons d'action ajoutés */}
+          <div className="flex gap-3 justify-center mb-6">
+            <Button className="gap-2">
+              <FileText className="w-4 h-4" />
+              Ajouter
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Enrichir
+            </Button>
+          </div>
+
           <div className="text-center mb-6">
             <h3 className="text-lg font-semibold">Trouvez un notaire près de chez vous</h3>
           </div>
@@ -561,6 +586,7 @@ export function DirectoriesSection() {
             showActions={true}
           />
 
+          
           <div className="space-y-4">
             <Card>
               <CardHeader>

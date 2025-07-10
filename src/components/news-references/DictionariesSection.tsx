@@ -1,10 +1,9 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TabFormField } from '@/components/common/TabFormField';
-import { BookOpen, Languages } from 'lucide-react';
+import { BookOpen, Languages, FileText } from 'lucide-react';
 
 export function DictionariesSection() {
   return (
@@ -22,6 +21,18 @@ export function DictionariesSection() {
         </TabsList>
 
         <TabsContent value="francais-arabe" className="mt-6 space-y-6">
+          {/* Boutons d'action */}
+          <div className="flex gap-3 justify-center mb-6">
+            <Button className="gap-2">
+              <BookOpen className="w-4 h-4" />
+              Ajouter
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Enrichir
+            </Button>
+          </div>
+
           <TabFormField
             placeholder="Rechercher un terme juridique..."
             onSearch={(query) => console.log('Recherche dictionnaire:', query)}
@@ -100,6 +111,18 @@ export function DictionariesSection() {
         </TabsContent>
 
         <TabsContent value="terminologie" className="mt-6 space-y-6">
+          {/* Boutons d'action */}
+          <div className="flex gap-3 justify-center mb-6">
+            <Button className="gap-2">
+              <BookOpen className="w-4 h-4" />
+              Ajouter
+            </Button>
+            <Button variant="outline" className="gap-2">
+              <FileText className="w-4 h-4" />
+              Enrichir
+            </Button>
+          </div>
+
           <TabFormField
             placeholder="Rechercher dans la terminologie spécialisée..."
             onSearch={(query) => console.log('Recherche terminologie:', query)}

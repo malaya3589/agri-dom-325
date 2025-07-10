@@ -58,6 +58,18 @@ export function LibrarySection() {
 
   return (
     <div className="space-y-6">
+      {/* Boutons d'action */}
+      <div className="flex gap-3 justify-center mb-6">
+        <Button className="gap-2">
+          <BookOpen className="w-4 h-4" />
+          Ajouter
+        </Button>
+        <Button variant="outline" className="gap-2">
+          <FileText className="w-4 h-4" />
+          Enrichir
+        </Button>
+      </div>
+
       {/* Onglets de la bibliothèque */}
       <LibraryTabs />
     </div>
