@@ -92,20 +92,22 @@ export function LegalTextsSections({ section, language }: LegalTextsSectionsProp
   }
 
   return (
-    <StandardizedSectionTemplate
-      icon={FileText}
-      title={getSectionTitle()}
-      description={getSectionDescription() || ''}
-      section={section}
-      searchContext="legal"
-      searchPlaceholder="Rechercher des textes juridiques..."
-      onSearch={(query) => console.log('Recherche:', query)}
-    >
+    <div className="space-y-6">
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <FileText className="w-8 h-8 text-green-600" />
+          <h1 className="text-3xl font-bold text-gray-900">{getSectionTitle()}</h1>
+        </div>
+        <p className="text-gray-600 text-lg max-w-3xl mx-auto mb-6">
+          {getSectionDescription()}
+        </p>
+      </div>
+
       <LegalTextsTabs 
         section={section} 
         onAddLegalText={handleAddLegalText}
         onOCRTextExtracted={handleOCRTextExtracted}
       />
-    </StandardizedSectionTemplate>
+    </div>
   );
 }

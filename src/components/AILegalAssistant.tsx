@@ -1,11 +1,9 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bot, Search, Clock, FileText, BarChart3, Users, Sparkles, History, Brain, Zap, Target, TrendingUp } from 'lucide-react';
+import { Bot, BarChart3, Zap, Brain, Sparkles, History, Target, TrendingUp } from 'lucide-react';
 import { SectionHeader } from './common/SectionHeader';
 import { ConversationalAIAssistant } from './ai/ConversationalAIAssistant';
 import { PredictiveJuridicalAnalysis } from './ai/PredictiveJuridicalAnalysis';
@@ -13,16 +11,7 @@ import { SpecializedNLP } from './ai/SpecializedNLP';
 import { EnhancedContextualRecommendations } from './ai/EnhancedContextualRecommendations';
 
 export function AILegalAssistant() {
-  const [query, setQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('assistant');
-
-  const suggestions = [
-    "Quelles sont les conditions de création d'une entreprise en Algérie ?",
-    "Comment calculer les congés payés selon le code du travail ?",
-    "Procédure d'obtention d'un permis de construire",
-    "Droits et obligations du locataire et du propriétaire"
-  ];
 
   const recentSearches = [
     { query: "Procédure de divorce", time: "Il y a 2 heures", results: 15 },
@@ -43,24 +32,6 @@ export function AILegalAssistant() {
     }
   ];
 
-  const quickActions = [
-    { icon: <FileText className="w-5 h-5" />, title: "Analyser un document", desc: "Extractez les points clés" },
-    { icon: <BarChart3 className="w-5 h-5" />, title: "Comparer des textes", desc: "Identifiez les différences" },
-    { icon: <Users className="w-5 h-5" />, title: "Résumer une procédure", desc: "Obtenez un guide simplifié" },
-    { icon: <Bot className="w-5 h-5" />, title: "Générer un modèle", desc: "Créez des documents types" }
-  ];
-
-  const handleSearch = async () => {
-    if (!query.trim()) return;
-    
-    setIsLoading(true);
-    // Simuler une recherche IA
-    setTimeout(() => {
-      setIsLoading(false);
-      // Ici on afficherait les résultats
-    }, 2000);
-  };
-
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <SectionHeader
@@ -69,6 +40,69 @@ export function AILegalAssistant() {
         icon={Bot}
         iconColor="text-green-600"
       />
+
+      {/* Cartes modernes des 3 assistants principaux */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-green-400 cursor-pointer bg-gradient-to-br from-green-50 to-emerald-50">
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
+              <Bot className="w-8 h-8 text-green-600" />
+            </div>
+            <CardTitle className="text-lg font-bold text-green-800">Assistant IA Classique</CardTitle>
+            <CardDescription className="text-green-600">
+              Assistant conversationnel pour répondre à vos questions juridiques
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button 
+              onClick={() => setActiveTab('assistant')}
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+            >
+              Utiliser l'Assistant
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-purple-400 cursor-pointer bg-gradient-to-br from-purple-50 to-violet-50">
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
+              <TrendingUp className="w-8 h-8 text-purple-600" />
+            </div>
+            <CardTitle className="text-lg font-bold text-purple-800">Analyse Prédictive Juridique</CardTitle>
+            <CardDescription className="text-purple-600">
+              Prédictions et analyses basées sur l'intelligence artificielle
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button 
+              onClick={() => setActiveTab('predictive')}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              Accéder aux Analyses
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="group hover:shadow-lg transition-all duration-300 border-2 hover:border-blue-400 cursor-pointer bg-gradient-to-br from-blue-50 to-cyan-50">
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
+              <Zap className="w-8 h-8 text-blue-600" />
+            </div>
+            <CardTitle className="text-lg font-bold text-blue-800">NLP Juridique Spécialisé</CardTitle>
+            <CardDescription className="text-blue-600">
+              Traitement avancé du langage naturel pour textes juridiques
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <Button 
+              onClick={() => setActiveTab('nlp')}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Explorer le NLP
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Onglets principaux pour les différentes fonctionnalités */}
       <Card>
@@ -80,7 +114,7 @@ export function AILegalAssistant() {
                 Assistant
               </TabsTrigger>
               <TabsTrigger value="search" className="gap-2">
-                <Search className="w-4 h-4" />
+                <Brain className="w-4 h-4" />
                 Recherche IA
               </TabsTrigger>
               <TabsTrigger value="predictive" className="gap-2">
@@ -174,7 +208,7 @@ export function AILegalAssistant() {
                   Décrivez votre situation ou posez votre question juridique
                 </p>
                 
-                <div className="relative">
+                {/* <div className="relative">
                   <Input
                     placeholder="Ex: Je souhaite créer une SARL, quelles sont les étapes à suivre et quels documents sont nécessaires ?"
                     value={query}
@@ -196,18 +230,18 @@ export function AILegalAssistant() {
                       </>
                     )}
                   </Button>
-                </div>
+                </div> */}
 
-                <div className="text-right">
+                {/* <div className="text-right">
                   <span className="text-xs text-gray-500">Alimenté par l'IA</span>
                   <Sparkles className="w-3 h-3 inline ml-1 text-yellow-500" />
-                </div>
+                </div> */}
               </div>
             </CardContent>
           </Card>
 
           {/* Suggestions */}
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h3 className="text-lg font-semibold">Suggestions de recherche :</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {suggestions.map((suggestion, index) => (
@@ -221,10 +255,10 @@ export function AILegalAssistant() {
                 </Button>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Quick Actions */}
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Bot className="w-5 h-5" />
@@ -250,7 +284,7 @@ export function AILegalAssistant() {
                 ))}
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </TabsContent>
 
         <TabsContent value="predictive">
