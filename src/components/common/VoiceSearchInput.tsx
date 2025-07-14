@@ -1,318 +1,173 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Mic, MicOff, Clock, Command, Search, Star } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Mic, MicOff, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+interface Suggestion {
+  id: string;
+  text: string;
+  type: 'recent' | 'suggestion' | 'template' | 'legal_term';
+  category?: string;
+}
+
 interface VoiceSearchInputProps {
-  value?: string;
-  onChange?: (value: string) => void;
+  value: string;
+  onChange: (value: string) => void;
   placeholder?: string;
   context?: 'search' | 'legal' | 'procedure' | 'general';
   className?: string;
-  onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  suggestions?: Array<{
-    id: string;
-    text: string;
-    type: 'recent' | 'suggestion' | 'template' | 'legal_term';
-    category?: string;
-  }>;
+  onKeyPress?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  suggestions?: Suggestion[];
   showVoiceButton?: boolean;
-  onVoiceResult?: (text: string) => void;
 }
 
-export function VoiceSearchInput({ 
-  value = '',
+export function VoiceSearchInput({
+  value,
   onChange,
-  placeholder = '',
+  placeholder = "Rechercher...",
   context = 'general',
-  className = '',
+  className,
   onKeyPress,
   suggestions = [],
-  showVoiceButton = true,
-  onVoiceResult
+  showVoiceButton = true
 }: VoiceSearchInputProps) {
   const [isListening, setIsListening] = useState(false);
-  const [isSupported, setIsSupported] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [filteredSuggestions, setFilteredSuggestions] = useState<any[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
   const recognitionRef = useRef<any>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
-  // Suggestions par défaut selon le contexte
-  const getDefaultSuggestions = () => {
-    const contextSuggestions = {
-      legal: [
-        { id: '1', text: 'Code civil algérien', type: 'legal_term', category: 'Code' },
-        { id: '2', text: 'Loi de finances 2024', type: 'legal_term', category: 'Loi' },
-        { id: '3', text: 'Décret exécutif', type: 'legal_term', category: 'Décret' },
-        { id: '4', text: 'Constitution algérienne', type: 'legal_term', category: 'Constitution' },
-        { id: '5', text: 'Ordonnance présidentielle', type: 'legal_term', category: 'Ordonnance' },
-        { id: '6', text: 'Arrêté ministériel', type: 'legal_term', category: 'Arrêté' },
-        { id: '7', text: 'Jurisprudence', type: 'legal_term', category: 'Jurisprudence' }
-      ],
-      procedure: [
-        { id: '1', text: 'Demande de passeport', type: 'template', category: 'Identité' },
-        { id: '2', text: 'Inscription universitaire', type: 'template', category: 'Éducation' },
-        { id: '3', text: 'Création d\'entreprise', type: 'template', category: 'Commerce' },
-        { id: '4', text: 'Permis de conduire', type: 'template', category: 'Transport' },
-        { id: '5', text: 'Acte de naissance', type: 'template', category: 'État civil' },
-        { id: '6', text: 'Permis de construire', type: 'template', category: 'Urbanisme' }
-      ],
-      search: [
-        { id: '1', text: 'textes juridiques récents', type: 'suggestion' },
-        { id: '2', text: 'procédures administratives', type: 'suggestion' },
-        { id: '3', text: 'jurisprudence 2024', type: 'suggestion' },
-        { id: '4', text: 'lois modifiées', type: 'suggestion' },
-        { id: '5', text: 'décrets d\'application', type: 'suggestion' }
-      ],
-      general: [
-        { id: '1', text: 'rechercher dans', type: 'suggestion' },
-        { id: '2', text: 'documentation officielle', type: 'suggestion' },
-        { id: '3', text: 'aide et support', type: 'suggestion' }
-      ]
-    };
-    return contextSuggestions[context] || contextSuggestions.general;
-  };
-
-  // Stable callback to avoid infinite loops
-  const handleVoiceResult = useCallback((text: string) => {
-    if (onChange) {
-      onChange(text);
+  // Memoize the speech recognition setup to prevent recreation on every render
+  const initializeSpeechRecognition = useCallback(() => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      console.warn('Speech recognition not supported');
+      return null;
     }
-    if (onVoiceResult) {
-      onVoiceResult(text);
-    }
-  }, [onChange, onVoiceResult]);
 
-  useEffect(() => {
-    if (!showVoiceButton) return;
-
-    // Check if speech recognition is supported
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
     
-    if (SpeechRecognition) {
-      setIsSupported(true);
-      
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'fr-FR';
-      
-      recognition.onresult = (event: any) => {
-        const transcript = event.results[0]?.transcript;
-        if (transcript) {
-          handleVoiceResult(transcript);
-        }
-        setIsListening(false);
-      };
-      
-      recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-        toast({
-          title: "Erreur de reconnaissance vocale",
-          description: "Une erreur s'est produite lors de la reconnaissance vocale.",
-          variant: "destructive"
-        });
-      };
-      
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-      
-      recognitionRef.current = recognition;
-    } else {
-      setIsSupported(false);
-    }
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'fr-FR';
 
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
+    recognition.onstart = () => {
+      setIsListening(true);
     };
-  }, [handleVoiceResult, toast, showVoiceButton]);
 
-  // Filtrer les suggestions
-  useEffect(() => {
-    const allSuggestions = [...suggestions, ...getDefaultSuggestions()];
-    
-    if (value && value.length > 0) {
-      const filtered = allSuggestions
-        .filter(item => 
-          item.text.toLowerCase().includes(value.toLowerCase())
-        )
-        .slice(0, 8);
-      
-      setFilteredSuggestions(filtered);
-      setShowSuggestions(filtered.length > 0);
-    } else {
-      setShowSuggestions(false);
-      setFilteredSuggestions([]);
-    }
-    setSelectedIndex(-1);
-  }, [value, context, suggestions]);
-
-  const startListening = useCallback(() => {
-    if (recognitionRef.current && !isListening) {
-      try {
-        recognitionRef.current.start();
-        setIsListening(true);
-      } catch (error) {
-        console.error('Error starting speech recognition:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de démarrer la reconnaissance vocale.",
-          variant: "destructive"
-        });
-      }
-    }
-  }, [isListening, toast]);
-
-  const stopListening = useCallback(() => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      onChange(transcript);
       setIsListening(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    return recognition;
+  }, [onChange]);
+
+  // Initialize speech recognition only once
+  useEffect(() => {
+    if (showVoiceButton && !recognitionRef.current) {
+      recognitionRef.current = initializeSpeechRecognition();
+    }
+  }, [showVoiceButton, initializeSpeechRecognition]);
+
+  const toggleVoiceSearch = useCallback(() => {
+    if (!recognitionRef.current) return;
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
     }
   }, [isListening]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showSuggestions) {
-      if (onKeyPress) {
-        onKeyPress(e);
-      }
-      return;
-    }
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+    setShowSuggestions(newValue.length > 0 && suggestions.length > 0);
+  }, [onChange, suggestions.length]);
 
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < filteredSuggestions.length - 1 ? prev + 1 : 0
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev > 0 ? prev - 1 : filteredSuggestions.length - 1
-        );
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0) {
-          onChange?.(filteredSuggestions[selectedIndex].text);
-          setShowSuggestions(false);
-        } else if (onKeyPress) {
-          onKeyPress(e);
-        }
-        break;
-      case 'Escape':
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
-        break;
-      default:
-        if (onKeyPress) {
-          onKeyPress(e);
-        }
-    }
-  };
-
-  const handleSuggestionClick = (suggestion: any) => {
-    onChange?.(suggestion.text);
+  const handleSuggestionClick = useCallback((suggestion: Suggestion) => {
+    onChange(suggestion.text);
     setShowSuggestions(false);
-    inputRef.current?.focus();
-  };
+  }, [onChange]);
 
-  const getSuggestionIcon = (type: string) => {
-    switch (type) {
-      case 'recent': return <Clock className="w-3 h-3" />;
-      case 'template': return <Command className="w-3 h-3" />;
-      case 'legal_term': return <Star className="w-3 h-3" />;
-      default: return <Search className="w-3 h-3" />;
-    }
-  };
+  const filteredSuggestions = suggestions.filter(s => 
+    s.text.toLowerCase().includes(value.toLowerCase())
+  ).slice(0, 5);
 
   return (
     <div className="relative">
-      <div className="flex gap-2">
-        <div className="flex-1 relative">
-          <Input
-            ref={inputRef}
-            value={value}
-            onChange={(e) => onChange?.(e.target.value)}
-            placeholder={placeholder}
-            className={cn(
-              isListening ? "border-red-300 bg-red-50" : "",
-              className
-            )}
-            onKeyDown={handleKeyDown}
-            onFocus={() => value.length > 0 && setShowSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-          />
-          
-          {/* Indicateur d'écoute */}
-          {isListening && (
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-            </div>
-          )}
-        </div>
+      <div className="relative">
+        <Input
+          type="text"
+          value={value}
+          onChange={handleInputChange}
+          onKeyPress={onKeyPress}
+          placeholder={placeholder}
+          className={cn("pr-20", className)}
+        />
         
-        {isSupported && showVoiceButton && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+          {showVoiceButton && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={toggleVoiceSearch}
+              disabled={!recognitionRef.current}
+              className={cn(
+                "h-8 w-8 p-0",
+                isListening ? "text-red-500" : "text-gray-500"
+              )}
+            >
+              {isListening ? (
+                <MicOff className="h-4 w-4" />
+              ) : (
+                <Mic className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+          
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
-            onClick={isListening ? stopListening : startListening}
-            className="flex items-center gap-2"
+            className="h-8 w-8 p-0 text-gray-500"
           >
-            {isListening ? (
-              <>
-                <MicOff className="w-4 h-4 animate-pulse text-red-500" />
-                <span className="hidden sm:inline">Arrêter</span>
-              </>
-            ) : (
-              <>
-                <Mic className="w-4 h-4" />
-                <span className="hidden sm:inline">Vocal</span>
-              </>
-            )}
+            <Search className="h-4 w-4" />
           </Button>
-        )}
+        </div>
       </div>
 
-      {/* Suggestions */}
-      {showSuggestions && !isListening && filteredSuggestions.length > 0 && (
-        <Card className="absolute top-full left-0 right-0 z-50 mt-1 max-h-64 overflow-y-auto bg-white border shadow-lg">
-          <div className="p-2">
-            {filteredSuggestions.map((suggestion, index) => (
-              <div
-                key={suggestion.id}
-                onClick={() => handleSuggestionClick(suggestion)}
-                className={cn(
-                  "flex items-center gap-2 p-2 rounded cursor-pointer transition-colors",
-                  index === selectedIndex 
-                    ? "bg-emerald-50 text-emerald-700" 
-                    : "hover:bg-gray-50"
-                )}
-              >
-                {getSuggestionIcon(suggestion.type)}
-                <span className="flex-1">{suggestion.text}</span>
-                {suggestion.category && (
-                  <Badge variant="outline" className="text-xs">
-                    {suggestion.category}
-                  </Badge>
-                )}
+      {/* Suggestions dropdown */}
+      {showSuggestions && filteredSuggestions.length > 0 && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+          {filteredSuggestions.map((suggestion) => (
+            <button
+              key={suggestion.id}
+              type="button"
+              onClick={() => handleSuggestionClick(suggestion)}
+              className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm">{suggestion.text}</span>
+                <span className="text-xs text-gray-400 capitalize">
+                  {suggestion.type}
+                </span>
               </div>
-            ))}
-          </div>
-        </Card>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
