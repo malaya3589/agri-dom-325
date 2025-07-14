@@ -17,7 +17,7 @@ export function Step5DigitizationModalities({ form }: FormStepProps) {
         <div className="flex items-center space-x-2">
           <Checkbox 
             id="numerisation" 
-            {...form.register('digitalProcedure')}
+            {...form.register('digitization')}
           />
           <Label htmlFor="numerisation">Numérisation de la procédure</Label>
         </div>
@@ -36,7 +36,7 @@ export function Step5DigitizationModalities({ form }: FormStepProps) {
           <Textarea
             id="withdrawal-when"
             placeholder="Délais et conditions de retrait..."
-            {...form.register('withdrawalConditions')}
+            {...form.register('withdrawalTime')}
           />
         </div>
         <div className="space-y-2">
@@ -44,7 +44,7 @@ export function Step5DigitizationModalities({ form }: FormStepProps) {
           <Textarea
             id="withdrawal-how"
             placeholder="Modalités de retrait..."
-            {...form.register('withdrawalMethods')}
+            {...form.register('withdrawalMethod')}
           />
         </div>
       </div>
@@ -54,14 +54,14 @@ export function Step5DigitizationModalities({ form }: FormStepProps) {
         <Input
           id="validity"
           placeholder="Ex: 10 ans, permanent, etc."
-          {...form.register('validityDuration')}
+          {...form.register('documentValidity')}
         />
       </div>
 
       <div className="flex items-center space-x-2">
         <Checkbox 
           id="appeal-possible" 
-          {...form.register('appealPossible')}
+          {...form.register('hasAppeal')}
         />
         <Label htmlFor="appeal-possible">Possibilité de recours</Label>
       </div>

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -79,10 +80,10 @@ export function Step1GeneralInfo({ form }: FormStepProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="type">Type de procédure *</Label>
-          <Select onValueChange={(value) => form.setValue('type', value)}>
+          <Label htmlFor="procedureCategory">Catégorie de procédure *</Label>
+          <Select onValueChange={(value) => form.setValue('procedureCategory', value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Sélectionner un type" />
+              <SelectValue placeholder="Sélectionner une catégorie" />
             </SelectTrigger>
             <SelectContent>
               {procedureTypes.map((type) => (
@@ -105,8 +106,8 @@ export function Step1GeneralInfo({ form }: FormStepProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="sector">Secteur et/ou administration *</Label>
-          <Select onValueChange={(value) => form.setValue('sector', value)}>
+          <Label htmlFor="sectorAdministration">Secteur et/ou administration *</Label>
+          <Select onValueChange={(value) => form.setValue('sectorAdministration', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Sélectionner un secteur" />
             </SelectTrigger>
