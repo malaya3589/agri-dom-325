@@ -6,34 +6,54 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Settings, Save, Wand2, Plus, Trash2, ClipboardList, Scan, FileImage } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { OCRScanner } from '@/components/common/OCRScanner';
-import { DynamicFormRenderer } from '@/components/forms/DynamicFormRenderer';
-import { useFormLibrary } from '@/hooks/useFormLibrary';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ArrowLeft, Settings, Save, Wand2, ClipboardList, Scan, FileImage } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { OCRScanner } from '@/components/common/OCRScanner';
+import { DynamicFieldList } from '@/components/procedure-form/DynamicFieldList';
+import { DocumentField } from '@/components/procedure-form/DocumentField';
+import { FileUploadField } from '@/components/procedure-form/FileUploadField';
 
 interface ProcedureFormProps {
   onClose: () => void;
   onSubmit: (data: any) => void;
 }
 
-interface ProcedureStep {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  responsible: string;
-}
+// Nomenclature data - these would normally come from a database
+const CATEGORIES = [
+  'Urbanisme',
+  'État civil',
+  'Fiscalité',
+  'Commerce',
+  'Social',
+  'Santé',
+  'Éducation',
+  'Transport',
+  'Environnement',
+  'Agriculture'
+];
+
+const ORGANIZATIONS = [
+  'Ministère de l\'Intérieur',
+  'Ministère des Finances',
+  'Ministère de la Justice',
+  'Ministère de la Santé',
+  'Ministère de l\'Éducation',
+  'Ministère du Commerce',
+  'Ministère de l\'Agriculture',
+  'Ministère des Transports',
+  'Wilaya',
+  'Commune',
+  'Direction des Impôts',
+  'Tribunal',
+  'Office National des Statistiques'
+];
 
 export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
   const { toast } = useToast();
-  const { getProcedureFormForCategory } = useFormLibrary();
   const [inputMethod, setInputMethod] = useState<'manual' | 'ocr'>('manual');
   const [showOCRScanner, setShowOCRScanner] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [dynamicFormData, setDynamicFormData] = useState<any>({});
 
   // Listen for OCR tab activation events
   useEffect(() => {
@@ -48,39 +68,55 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
   }, []);
 
   const [formData, setFormData] = useState({
-    procedureType: '',
+    // Informations de base
     name: '',
     description: '',
+    procedureCategory: '',
     sectorAdministration: '',
-    steps: '',
-    serviceConditions: '',
-    requiredDocuments: '',
-    requiredDocumentsType: 'text',
-    additionalDocuments: '',
-    additionalDocumentsType: 'text',
     targetCategory: '',
+    
+    // Champs dynamiques
+    steps: [''],
+    conditions: [''],
+    requiredDocuments: [''],
+    requiredDocumentsType: 'text' as 'existing' | 'text',
+    complementaryDocuments: [''],
+    complementaryDocumentsType: 'text' as 'existing' | 'text',
+    legalBasis: [''],
+    
+    // Modalités
     submissionLocation: '',
-    validityType: 'periodic',
+    validityType: 'periodic' as 'periodic' | 'open',
     validityStartDate: '',
     validityEndDate: '',
     processingDuration: '',
-    feeType: 'gratuit',
+    feeType: 'gratuit' as 'gratuit' | 'payant',
     feeAmount: '',
+    paymentMethods: '',
+    
+    // Numérisation
     digitization: false,
     digitizationDate: '',
     electronicPortalLink: '',
     mobileAppLink: '',
     thirdPartySubmission: false,
+    
+    // Retrait et validité
     withdrawalTime: '',
     withdrawalMethod: '',
     documentValidity: '',
+    
+    // Recours
     hasAppeal: false,
     appealLocation: '',
     appealDeadline: '',
     appealFees: '',
-    legalAnchor: '',
+    
+    // Fichiers
     userGuide: '',
     downloadableForm: '',
+    
+    // FAQ et contact
     faq: '',
     contactAddress: '',
     contactPhone: '',
@@ -116,21 +152,13 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Combiner les données du formulaire dynamique et du formulaire classique
-    const finalData = { ...formData, ...dynamicFormData, procedureCategory: selectedCategory };
-    console.log('Données de la procédure:', finalData);
-    onSubmit(finalData);
+    console.log('Données de la procédure:', formData);
+    onSubmit(formData);
     toast({
       title: "Procédure ajoutée",
-      description: `La procédure "${finalData.name || 'nouvelle procédure'}" a été ajoutée avec succès.`,
+      description: `La procédure "${formData.name || 'nouvelle procédure'}" a été ajoutée avec succès.`,
     });
   };
-
-  const handleDynamicFieldChange = (fieldName: string, value: any) => {
-    setDynamicFormData(prev => ({ ...prev, [fieldName]: value }));
-  };
-
-  const selectedTemplate = selectedCategory ? getProcedureFormForCategory(selectedCategory) : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 p-6">
@@ -241,22 +269,39 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
         {/* Formulaire manuel */}
         {inputMethod === 'manual' && (
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Informations de base */}
+            
+            {/* Informations générales */}
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
-                <CardTitle className="text-xl text-gray-900">Procédure administrative</CardTitle>
+                <CardTitle className="text-xl text-gray-900">Informations générales</CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium text-gray-700">Nom de la procédure *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    placeholder="Nom de la procédure"
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    required
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">Nom de la procédure *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      placeholder="Nom de la procédure"
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="procedureCategory" className="text-sm font-medium text-gray-700">Catégorie de procédure *</Label>
+                    <Select onValueChange={(value) => handleInputChange('procedureCategory', value)} value={formData.procedureCategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner une catégorie" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map((category) => (
+                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -272,122 +317,94 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="procedureType" className="text-sm font-medium text-gray-700">Type de procédure *</Label>
-                  <Input
-                    id="procedureType"
-                    value={formData.procedureType}
-                    onChange={(e) => handleInputChange('procedureType', e.target.value)}
-                    placeholder="Type de procédure"
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    required
-                  />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="sectorAdministration" className="text-sm font-medium text-gray-700">Secteur et/ou administration *</Label>
+                    <Select onValueChange={(value) => handleInputChange('sectorAdministration', value)} value={formData.sectorAdministration}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner une organisation" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ORGANIZATIONS.map((org) => (
+                          <SelectItem key={org} value={org}>{org}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="sectorAdministration" className="text-sm font-medium text-gray-700">Secteur et/ou administration *</Label>
-                  <Input
-                    id="sectorAdministration"
-                    value={formData.sectorAdministration}
-                    onChange={(e) => handleInputChange('sectorAdministration', e.target.value)}
-                    placeholder="Secteur et/ou administration"
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    required
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="targetCategory" className="text-sm font-medium text-gray-700">Catégorie Ciblée</Label>
+                    <Select onValueChange={(value) => handleInputChange('targetCategory', value)} value={formData.targetCategory}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner la catégorie ciblée" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="citoyen">Citoyen</SelectItem>
+                        <SelectItem value="administration">Administration</SelectItem>
+                        <SelectItem value="entreprises">Entreprises</SelectItem>
+                        <SelectItem value="investisseur">Investisseur</SelectItem>
+                        <SelectItem value="associations">Associations</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                <div className="space-y-2">
-                  <Label htmlFor="steps" className="text-sm font-medium text-gray-700">Étapes (avec démonstration si disponible)</Label>
-                  <Textarea
-                    id="steps"
-                    value={formData.steps}
-                    onChange={(e) => handleInputChange('steps', e.target.value)}
-                    placeholder="Décrire les étapes de la procédure..."
-                    rows={3}
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
+            {/* Détails de la procédure */}
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
+                <CardTitle className="text-xl text-gray-900">Détails de la procédure</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <DynamicFieldList
+                  label="Étapes (avec démonstration si disponible)"
+                  values={formData.steps}
+                  onChange={(values) => handleInputChange('steps', values)}
+                  placeholder="Décrire une étape de la procédure..."
+                  type="textarea"
+                />
 
-                <div className="space-y-2">
-                  <Label htmlFor="serviceConditions" className="text-sm font-medium text-gray-700">Conditions d'utilisation du service</Label>
-                  <Textarea
-                    id="serviceConditions"
-                    value={formData.serviceConditions}
-                    onChange={(e) => handleInputChange('serviceConditions', e.target.value)}
-                    placeholder="Conditions d'utilisation du service..."
-                    rows={3}
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
+                <DynamicFieldList
+                  label="Conditions d'utilisation du service"
+                  values={formData.conditions}
+                  onChange={(values) => handleInputChange('conditions', values)}
+                  placeholder="Décrire une condition d'utilisation..."
+                  type="textarea"
+                />
+              </CardContent>
+            </Card>
 
-                {/* Documents demandés */}
-                <div className="space-y-4">
-                  <Label className="text-sm font-medium text-gray-700">Documents demandés</Label>
-                  <RadioGroup
-                    value={formData.requiredDocumentsType}
-                    onValueChange={(value) => handleInputChange('requiredDocumentsType', value)}
-                    className="mb-3"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="existing" id="existing-docs" />
-                      <Label htmlFor="existing-docs">Sélection pour les procédures existantes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="text" id="new-docs" />
-                      <Label htmlFor="new-docs">Texte pour les nouveaux</Label>
-                    </div>
-                  </RadioGroup>
-                  <Textarea
-                    value={formData.requiredDocuments}
-                    onChange={(e) => handleInputChange('requiredDocuments', e.target.value)}
-                    placeholder="Lister les documents requis..."
-                    rows={3}
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
+            {/* Documents */}
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
+                <CardTitle className="text-xl text-gray-900">Documents requis</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <DocumentField
+                  label="Documents demandés"
+                  values={formData.requiredDocuments}
+                  onChange={(values) => handleInputChange('requiredDocuments', values)}
+                  type={formData.requiredDocumentsType}
+                  onTypeChange={(type) => handleInputChange('requiredDocumentsType', type)}
+                />
 
-                {/* Documents Complémentaires */}
-                <div className="space-y-4">
-                  <Label className="text-sm font-medium text-gray-700">Documents Complémentaires (si nécessaire après validation)</Label>
-                  <RadioGroup
-                    value={formData.additionalDocumentsType}
-                    onValueChange={(value) => handleInputChange('additionalDocumentsType', value)}
-                    className="mb-3"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="existing" id="existing-additional" />
-                      <Label htmlFor="existing-additional">Sélection pour les procédures existantes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="text" id="new-additional" />
-                      <Label htmlFor="new-additional">Texte pour les nouveaux</Label>
-                    </div>
-                  </RadioGroup>
-                  <Textarea
-                    value={formData.additionalDocuments}
-                    onChange={(e) => handleInputChange('additionalDocuments', e.target.value)}
-                    placeholder="Documents complémentaires..."
-                    rows={3}
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </div>
+                <DocumentField
+                  label="Documents Complémentaires"
+                  values={formData.complementaryDocuments}
+                  onChange={(values) => handleInputChange('complementaryDocuments', values)}
+                  type={formData.complementaryDocumentsType}
+                  onTypeChange={(type) => handleInputChange('complementaryDocumentsType', type)}
+                />
+              </CardContent>
+            </Card>
 
-                <div className="space-y-2">
-                  <Label htmlFor="targetCategory" className="text-sm font-medium text-gray-700">Catégorie Ciblée</Label>
-                  <Select onValueChange={(value) => handleInputChange('targetCategory', value)} value={formData.targetCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner la catégorie ciblée" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="citoyen">Citoyen</SelectItem>
-                      <SelectItem value="administration">Administration</SelectItem>
-                      <SelectItem value="entreprises">Entreprises</SelectItem>
-                      <SelectItem value="investisseur">Investisseur</SelectItem>
-                      <SelectItem value="associations">Associations</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
+            {/* Modalités */}
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
+                <CardTitle className="text-xl text-gray-900">Modalités de la procédure</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="submissionLocation" className="text-sm font-medium text-gray-700">Où déposer le dossier - Administration concernée</Label>
                   <Input
@@ -473,16 +490,32 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
                       </div>
                     </RadioGroup>
                     {formData.feeType === 'payant' && (
-                      <Input
-                        placeholder="Montant en DA"
-                        value={formData.feeAmount}
-                        onChange={(e) => handleInputChange('feeAmount', e.target.value)}
-                        className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                      />
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="Montant en DA"
+                          value={formData.feeAmount}
+                          onChange={(e) => handleInputChange('feeAmount', e.target.value)}
+                          className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                        <Input
+                          placeholder="Méthodes de paiement"
+                          value={formData.paymentMethods}
+                          onChange={(e) => handleInputChange('paymentMethods', e.target.value)}
+                          className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
+            {/* Numérisation et modalités */}
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
+                <CardTitle className="text-xl text-gray-900">Numérisation et modalités</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
                 {/* Numérisation */}
                 <div className="space-y-4">
                   <div className="flex items-center space-x-2">
@@ -586,7 +619,7 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
                       checked={formData.hasAppeal}
                       onCheckedChange={(checked) => handleInputChange('hasAppeal', checked)}
                     />
-                    <Label htmlFor="hasAppeal">Recours</Label>
+                    <Label htmlFor="hasAppeal">Recours disponible</Label>
                   </div>
 
                   {formData.hasAppeal && (
@@ -624,42 +657,47 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
                     </div>
                   )}
                 </div>
+              </CardContent>
+            </Card>
 
-                <div className="space-y-2">
-                  <Label htmlFor="legalAnchor" className="text-sm font-medium text-gray-700">Ancrage juridique</Label>
-                  <Textarea
-                    id="legalAnchor"
-                    value={formData.legalAnchor}
-                    onChange={(e) => handleInputChange('legalAnchor', e.target.value)}
-                    placeholder="Références légales et réglementaires..."
-                    rows={3}
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+            {/* Ancrage juridique et fichiers */}
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
+                <CardTitle className="text-xl text-gray-900">Ancrage juridique et fichiers</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <DynamicFieldList
+                  label="Ancrage juridique"
+                  values={formData.legalBasis}
+                  onChange={(values) => handleInputChange('legalBasis', values)}
+                  placeholder="Référence légale ou réglementaire..."
+                  type="textarea"
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FileUploadField
+                    label="Guide d'utilisation à télécharger"
+                    value={formData.userGuide}
+                    onChange={(value) => handleInputChange('userGuide', value)}
+                    accept=".pdf,.doc,.docx"
+                  />
+
+                  <FileUploadField
+                    label="Formulaire à télécharger"
+                    value={formData.downloadableForm}
+                    onChange={(value) => handleInputChange('downloadableForm', value)}
+                    accept=".pdf,.doc,.docx"
                   />
                 </div>
+              </CardContent>
+            </Card>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="userGuide">Guide d'utilisation à télécharger</Label>
-                    <Input
-                      id="userGuide"
-                      value={formData.userGuide}
-                      onChange={(e) => handleInputChange('userGuide', e.target.value)}
-                      placeholder="Lien vers le guide..."
-                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="downloadableForm">Formulaire à télécharger</Label>
-                    <Input
-                      id="downloadableForm"
-                      value={formData.downloadableForm}
-                      onChange={(e) => handleInputChange('downloadableForm', e.target.value)}
-                      placeholder="Lien vers le formulaire..."
-                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
+            {/* Informations complémentaires */}
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
+                <CardTitle className="text-xl text-gray-900">Informations complémentaires</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
                 <div>
                   <Label htmlFor="faq">Questions fréquemment posées</Label>
                   <Textarea
