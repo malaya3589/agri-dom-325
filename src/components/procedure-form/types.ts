@@ -1,69 +1,65 @@
+
 import { UseFormReturn } from 'react-hook-form';
 
 export interface ProcedureStep {
   id: string;
   title: string;
   description: string;
-  conditions?: string;
+}
+
+export interface ProcedureFormData {
+  name: string;
+  description: string;
+  procedureCategory: string;
+  sectorAdministration: string;
+  steps: string[];
+  conditions: string[];
+  requiredDocuments: string[];
+  requiredDocumentsType: 'existing' | 'text';
+  complementaryDocuments: string[];
+  complementaryDocumentsType: 'existing' | 'text';
+  targetCategory: string;
+  submissionLocation: string;
+  validityType: 'periodic' | 'open';
+  validityStartDate: string;
+  validityEndDate: string;
+  processingDuration: string;
+  feeType: 'gratuit' | 'payant';
+  feeAmount: string;
+  digitization: boolean;
+  digitizationDate: string;
+  electronicPortalLink: string;
+  mobileAppLink: string;
+  thirdPartySubmission: boolean;
+  withdrawalTime: string;
+  withdrawalMethod: string;
+  documentValidity: string;
+  hasAppeal: boolean;
+  appealLocation: string;
+  appealDeadline: string;
+  appealFees: string;
+  legalBasis: string[];
+  userGuide: File | null;
+  downloadableForm: File | null;
+  frequentQuestions: string;
+  contactAddress: string;
+  phoneNumber: string;
+  greenNumber: string;
+  email: string;
 }
 
 export interface FormStepProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<ProcedureFormData>;
   procedureSteps?: ProcedureStep[];
   setProcedureSteps?: (steps: ProcedureStep[]) => void;
   requiredDocs?: string[];
   setRequiredDocs?: (docs: string[]) => void;
   complementaryDocs?: string[];
   setComplementaryDocs?: (docs: string[]) => void;
+  steps?: string[];
+  setSteps?: (steps: string[]) => void;
+  conditions?: string[];
+  setConditions?: (conditions: string[]) => void;
+  legalBasis?: string[];
+  setLegalBasis?: (basis: string[]) => void;
 }
-
-export const defaultFormValues = {
-  // Step 1
-  title: '',
-  description: '',
-  targetAudience: '',
-  category: '',
-  institution: '',
-  
-  // Step 2
-  conditions: '',
-  
-  // Step 3
-  requiredDocuments: '',
-  complementaryDocuments: '',
-  
-  // Step 4
-  processingTime: '',
-  cost: '',
-  paymentMethods: '',
-  
-  // Step 5
-  digitalProcedure: false,
-  thirdPartySubmission: false,
-  withdrawalConditions: '',
-  withdrawalMethods: '',
-  validityDuration: '',
-  appealPossible: false,
-  
-  // Step 6
-  legalBasis: '',
-  frequentQuestions: '',
-  contactAddress: '',
-  phoneNumber: '',
-  email: '',
-  greenNumber: ''
-};
-
-export const targetCategories = [
-  'Citoyens',
-  'Entreprises',
-  'Administrations',
-  'Associations'
-];
-
-export const procedureTypes = [
-  'Demande',
-  'Déclaration',
-  'Autorisation',
-  'Certificat'
-];
