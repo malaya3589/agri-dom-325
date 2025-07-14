@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnalyticsDashboardsSection } from '@/components/analytics/AnalyticsDashboardsSection';
@@ -23,6 +22,7 @@ import {
   Activity,
   Users
 } from 'lucide-react';
+import { TrendsAnalysis } from '@/components/analysis/TrendsAnalysis';
 
 interface AnalysisReportsSectionsProps {
   section: string;
@@ -171,12 +171,7 @@ export function AnalysisReportsSections({ section, language }: AnalysisReportsSe
       </TabsContent>
 
       <TabsContent value="trends">
-        <div className="space-y-6">
-          <div className="text-center p-8 border rounded-lg">
-            <h3 className="text-xl font-semibold mb-2">Analyse des Tendances</h3>
-            <p className="text-muted-foreground">Identification et analyse des tendances juridiques émergentes</p>
-          </div>
-        </div>
+        <TrendsAnalysis />
       </TabsContent>
     </Tabs>
   );

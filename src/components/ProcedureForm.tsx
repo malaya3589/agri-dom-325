@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { OCRScanner } from '@/components/common/OCRScanner';
 import { DynamicFormRenderer } from '@/components/forms/DynamicFormRenderer';
 import { useFormLibrary } from '@/hooks/useFormLibrary';
+import { Switch } from '@/components/ui/switch';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 interface ProcedureFormProps {
   onClose: () => void;
@@ -44,56 +46,50 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
       window.removeEventListener('activate-ocr-tab', handleActivateOCRTab);
     };
   }, []);
+
   const [formData, setFormData] = useState({
-    title: '',
+    procedureType: '',
+    name: '',
     description: '',
-    category: '',
-    department: '',
-    duration: '',
-    complexity: '',
-    cost: '',
-    digitalizable: false,
-    publicAccess: false,
-    requiredDocs: [] as string[],
-    complementaryDocs: [] as string[],
-    steps: [] as ProcedureStep[],
-    conditions: '',
-    exceptions: '',
-    legalBasis: '',
-    contact: '',
-    notes: ''
+    sectorAdministration: '',
+    steps: '',
+    serviceConditions: '',
+    requiredDocuments: '',
+    requiredDocumentsType: 'text',
+    additionalDocuments: '',
+    additionalDocumentsType: 'text',
+    targetCategory: '',
+    submissionLocation: '',
+    validityType: 'periodic',
+    validityStartDate: '',
+    validityEndDate: '',
+    processingDuration: '',
+    feeType: 'gratuit',
+    feeAmount: '',
+    digitization: false,
+    digitizationDate: '',
+    electronicPortalLink: '',
+    mobileAppLink: '',
+    thirdPartySubmission: false,
+    withdrawalTime: '',
+    withdrawalMethod: '',
+    documentValidity: '',
+    hasAppeal: false,
+    appealLocation: '',
+    appealDeadline: '',
+    appealFees: '',
+    legalAnchor: '',
+    userGuide: '',
+    downloadableForm: '',
+    faq: '',
+    contactAddress: '',
+    contactPhone: '',
+    contactGreenNumber: '',
+    contactEmail: ''
   });
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleArrayChange = (field: 'requiredDocs' | 'complementaryDocs', value: string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const addStep = () => {
-    const newStep: ProcedureStep = {
-      id: `step-${Date.now()}`,
-      title: '',
-      description: '',
-      duration: '',
-      responsible: ''
-    };
-    setFormData(prev => ({ ...prev, steps: [...prev.steps, newStep] }));
-  };
-
-  const removeStep = (id: string) => {
-    setFormData(prev => ({ ...prev, steps: prev.steps.filter(step => step.id !== id) }));
-  };
-
-  const updateStep = (id: string, field: keyof ProcedureStep, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      steps: prev.steps.map(step => 
-        step.id === id ? { ...step, [field]: value } : step
-      )
-    }));
   };
 
   const handleOCRTextExtracted = (extractedText: string) => {
@@ -126,7 +122,7 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
     onSubmit(finalData);
     toast({
       title: "Procédure ajoutée",
-      description: `La procédure "${finalData.title || 'nouvelle procédure'}" a été ajoutée avec succès.`,
+      description: `La procédure "${finalData.name || 'nouvelle procédure'}" a été ajoutée avec succès.`,
     });
   };
 
@@ -149,7 +145,7 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                 <Settings className="w-8 h-8 text-blue-600" />
-                Ajouter une nouvelle procédure
+                Ajouter une nouvelle procédure administrative
               </h1>
               <p className="text-gray-600 mt-1">Configuration complète d'une procédure administrative</p>
             </div>
@@ -245,20 +241,19 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
         {/* Formulaire manuel */}
         {inputMethod === 'manual' && (
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Section 1: Informations générales */}
-              <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
-                  <CardTitle className="text-xl text-gray-900">Informations générales</CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-6">
+            {/* Informations de base */}
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
+                <CardTitle className="text-xl text-gray-900">Procédure administrative</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-sm font-medium text-gray-700">Titre de la procédure *</Label>
+                  <Label htmlFor="name" className="text-sm font-medium text-gray-700">Nom de la procédure *</Label>
                   <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => handleInputChange('title', e.target.value)}
-                    placeholder="Ex: Demande de permis de construire"
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="Nom de la procédure"
                     className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     required
                   />
@@ -270,269 +265,477 @@ export function ProcedureForm({ onClose, onSubmit }: ProcedureFormProps) {
                     id="description"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
-                    placeholder="Description détaillée de la procédure..."
+                    placeholder="Description de la procédure"
                     rows={4}
                     className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     required
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="category" className="text-sm font-medium text-gray-700">Catégorie *</Label>
-                    <Select onValueChange={(value) => {
-                      handleInputChange('category', value);
-                      setSelectedCategory(value);
-                    }}>
-                      <SelectTrigger className="border-gray-200 focus:border-blue-500 focus:ring-blue-500">
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="urbanisme">Urbanisme</SelectItem>
-                        <SelectItem value="etat-civil">État civil</SelectItem>
-                        <SelectItem value="social">Social</SelectItem>
-                        <SelectItem value="fiscal">Fiscal</SelectItem>
-                        <SelectItem value="commerce">Commerce</SelectItem>
-                        <SelectItem value="environnement">Environnement</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="department" className="text-sm font-medium text-gray-700">Service responsable *</Label>
-                    <Input
-                      id="department"
-                      value={formData.department}
-                      onChange={(e) => handleInputChange('department', e.target.value)}
-                      placeholder="Ex: Service urbanisme"
-                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="duration" className="text-sm font-medium text-gray-700">Durée estimée</Label>
-                    <Input
-                      id="duration"
-                      value={formData.duration}
-                      onChange={(e) => handleInputChange('duration', e.target.value)}
-                      placeholder="Ex: 30 jours"
-                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="complexity" className="text-sm font-medium text-gray-700">Complexité</Label>
-                    <Select onValueChange={(value) => handleInputChange('complexity', value)}>
-                      <SelectTrigger className="border-gray-200 focus:border-blue-500 focus:ring-blue-500">
-                        <SelectValue placeholder="Niveau" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="simple">Simple</SelectItem>
-                        <SelectItem value="moyenne">Moyenne</SelectItem>
-                        <SelectItem value="complexe">Complexe</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cost" className="text-sm font-medium text-gray-700">Coût (DA)</Label>
-                    <Input
-                      id="cost"
-                      value={formData.cost}
-                      onChange={(e) => handleInputChange('cost', e.target.value)}
-                      placeholder="Ex: 5000"
-                      type="number"
-                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Formulaire dynamique adapté à la catégorie */}
-            {selectedTemplate && (
-              <DynamicFormRenderer
-                template={selectedTemplate}
-                formData={dynamicFormData}
-                onFieldChange={handleDynamicFieldChange}
-                className="mb-8"
-              />
-            )}
-
-            {/* Section 2: Conditions et modalités */}
-            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-              <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-green-50">
-                <CardTitle className="text-xl text-gray-900">Conditions et modalités</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="conditions" className="text-sm font-medium text-gray-700">Conditions d'éligibilité</Label>
-                  <Textarea
-                    id="conditions"
-                    value={formData.conditions}
-                    onChange={(e) => handleInputChange('conditions', e.target.value)}
-                    placeholder="Conditions requises pour cette procédure..."
-                    rows={4}
-                    className="border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+                  <Label htmlFor="procedureType" className="text-sm font-medium text-gray-700">Type de procédure *</Label>
+                  <Input
+                    id="procedureType"
+                    value={formData.procedureType}
+                    onChange={(e) => handleInputChange('procedureType', e.target.value)}
+                    placeholder="Type de procédure"
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="exceptions" className="text-sm font-medium text-gray-700">Exceptions et cas particuliers</Label>
+                  <Label htmlFor="sectorAdministration" className="text-sm font-medium text-gray-700">Secteur et/ou administration *</Label>
+                  <Input
+                    id="sectorAdministration"
+                    value={formData.sectorAdministration}
+                    onChange={(e) => handleInputChange('sectorAdministration', e.target.value)}
+                    placeholder="Secteur et/ou administration"
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="steps" className="text-sm font-medium text-gray-700">Étapes (avec démonstration si disponible)</Label>
                   <Textarea
-                    id="exceptions"
-                    value={formData.exceptions}
-                    onChange={(e) => handleInputChange('exceptions', e.target.value)}
-                    placeholder="Cas d'exception et situations particulières..."
+                    id="steps"
+                    value={formData.steps}
+                    onChange={(e) => handleInputChange('steps', e.target.value)}
+                    placeholder="Décrire les étapes de la procédure..."
                     rows={3}
-                    className="border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="legalBasis" className="text-sm font-medium text-gray-700">Base légale</Label>
-                  <Input
-                    id="legalBasis"
-                    value={formData.legalBasis}
-                    onChange={(e) => handleInputChange('legalBasis', e.target.value)}
-                    placeholder="Ex: Loi n° 90-29 du 1er décembre 1990"
-                    className="border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+                  <Label htmlFor="serviceConditions" className="text-sm font-medium text-gray-700">Conditions d'utilisation du service</Label>
+                  <Textarea
+                    id="serviceConditions"
+                    value={formData.serviceConditions}
+                    onChange={(e) => handleInputChange('serviceConditions', e.target.value)}
+                    placeholder="Conditions d'utilisation du service..."
+                    rows={3}
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="contact" className="text-sm font-medium text-gray-700">Contact/Responsable</Label>
-                  <Input
-                    id="contact"
-                    value={formData.contact}
-                    onChange={(e) => handleInputChange('contact', e.target.value)}
-                    placeholder="Email ou téléphone du responsable"
-                    className="border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div className="flex gap-6">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.digitalizable}
-                      onChange={(e) => handleInputChange('digitalizable', e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="text-sm text-gray-700">Numérisable</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.publicAccess}
-                      onChange={(e) => handleInputChange('publicAccess', e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <span className="text-sm text-gray-700">Accès public</span>
-                  </label>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Section 3: Étapes de la procédure */}
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-purple-50 to-blue-50">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl text-gray-900">Étapes de la procédure</CardTitle>
-                <Button type="button" onClick={addStep} variant="outline" className="gap-2 bg-blue-50 border-blue-200 hover:bg-blue-100">
-                  <Plus className="w-4 h-4" />
-                  Ajouter une étape
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              {formData.steps.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Settings className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>Aucune étape définie. Cliquez sur "Ajouter une étape" pour commencer.</p>
-                </div>
-              ) : (
+                {/* Documents demandés */}
                 <div className="space-y-4">
-                  {formData.steps.map((step, index) => (
-                    <div key={step.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-gray-900">Étape {index + 1}</h4>
-                        <Button
-                          type="button"
-                          onClick={() => removeStep(step.id)}
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Label className="text-sm font-medium text-gray-700">Documents demandés</Label>
+                  <RadioGroup
+                    value={formData.requiredDocumentsType}
+                    onValueChange={(value) => handleInputChange('requiredDocumentsType', value)}
+                    className="mb-3"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="existing" id="existing-docs" />
+                      <Label htmlFor="existing-docs">Sélection pour les procédures existantes</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="text" id="new-docs" />
+                      <Label htmlFor="new-docs">Texte pour les nouveaux</Label>
+                    </div>
+                  </RadioGroup>
+                  <Textarea
+                    value={formData.requiredDocuments}
+                    onChange={(e) => handleInputChange('requiredDocuments', e.target.value)}
+                    placeholder="Lister les documents requis..."
+                    rows={3}
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Documents Complémentaires */}
+                <div className="space-y-4">
+                  <Label className="text-sm font-medium text-gray-700">Documents Complémentaires (si nécessaire après validation)</Label>
+                  <RadioGroup
+                    value={formData.additionalDocumentsType}
+                    onValueChange={(value) => handleInputChange('additionalDocumentsType', value)}
+                    className="mb-3"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="existing" id="existing-additional" />
+                      <Label htmlFor="existing-additional">Sélection pour les procédures existantes</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="text" id="new-additional" />
+                      <Label htmlFor="new-additional">Texte pour les nouveaux</Label>
+                    </div>
+                  </RadioGroup>
+                  <Textarea
+                    value={formData.additionalDocuments}
+                    onChange={(e) => handleInputChange('additionalDocuments', e.target.value)}
+                    placeholder="Documents complémentaires..."
+                    rows={3}
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="targetCategory" className="text-sm font-medium text-gray-700">Catégorie Ciblée</Label>
+                  <Select onValueChange={(value) => handleInputChange('targetCategory', value)} value={formData.targetCategory}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner la catégorie ciblée" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="citoyen">Citoyen</SelectItem>
+                      <SelectItem value="administration">Administration</SelectItem>
+                      <SelectItem value="entreprises">Entreprises</SelectItem>
+                      <SelectItem value="investisseur">Investisseur</SelectItem>
+                      <SelectItem value="associations">Associations</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="submissionLocation" className="text-sm font-medium text-gray-700">Où déposer le dossier - Administration concernée</Label>
+                  <Input
+                    id="submissionLocation"
+                    value={formData.submissionLocation}
+                    onChange={(e) => handleInputChange('submissionLocation', e.target.value)}
+                    placeholder="Administration concernée"
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                {/* Validité de la procédure */}
+                <div className="space-y-4">
+                  <Label className="text-sm font-medium text-gray-700">Validité de la procédure</Label>
+                  <RadioGroup
+                    value={formData.validityType}
+                    onValueChange={(value) => handleInputChange('validityType', value)}
+                    className="mb-3"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="periodic" id="periodic" />
+                      <Label htmlFor="periodic">Périodique</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="open" id="open" />
+                      <Label htmlFor="open">Ouverte</Label>
+                    </div>
+                  </RadioGroup>
+                  {formData.validityType === 'periodic' && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="validityStartDate">Du</Label>
                         <Input
-                          placeholder="Titre de l'étape"
-                          value={step.title}
-                          onChange={(e) => updateStep(step.id, 'title', e.target.value)}
+                          id="validityStartDate"
+                          type="date"
+                          value={formData.validityStartDate}
+                          onChange={(e) => handleInputChange('validityStartDate', e.target.value)}
                           className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                         />
-                        <Input
-                          placeholder="Responsable"
-                          value={step.responsible}
-                          onChange={(e) => updateStep(step.id, 'responsible', e.target.value)}
-                          className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                        />
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-                        <div className="md:col-span-3">
-                          <Textarea
-                            placeholder="Description de l'étape"
-                            value={step.description}
-                            onChange={(e) => updateStep(step.id, 'description', e.target.value)}
-                            rows={2}
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                          />
-                        </div>
+                      <div>
+                        <Label htmlFor="validityEndDate">Au</Label>
                         <Input
-                          placeholder="Durée"
-                          value={step.duration}
-                          onChange={(e) => updateStep(step.id, 'duration', e.target.value)}
+                          id="validityEndDate"
+                          type="date"
+                          value={formData.validityEndDate}
+                          onChange={(e) => handleInputChange('validityEndDate', e.target.value)}
                           className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                         />
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </CardContent>
-          </Card>
 
-          {/* Section 4: Notes additionnelles */}
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-yellow-50 to-orange-50">
-              <CardTitle className="text-xl text-gray-900">Notes et informations complémentaires</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <Textarea
-                id="notes"
-                value={formData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                placeholder="Informations complémentaires, remarques, conseils pour les usagers..."
-                rows={4}
-                className="border-gray-200 focus:border-orange-500 focus:ring-orange-500"
-              />
-            </CardContent>
-          </Card>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="processingDuration" className="text-sm font-medium text-gray-700">Durée du traitement (jours)</Label>
+                    <Input
+                      id="processingDuration"
+                      type="number"
+                      value={formData.processingDuration}
+                      onChange={(e) => handleInputChange('processingDuration', e.target.value)}
+                      placeholder="Nombre de jours"
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">Frais</Label>
+                    <RadioGroup
+                      value={formData.feeType}
+                      onValueChange={(value) => handleInputChange('feeType', value)}
+                      className="mb-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="gratuit" id="gratuit" />
+                        <Label htmlFor="gratuit">Gratuit</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="payant" id="payant" />
+                        <Label htmlFor="payant">Payant</Label>
+                      </div>
+                    </RadioGroup>
+                    {formData.feeType === 'payant' && (
+                      <Input
+                        placeholder="Montant en DA"
+                        value={formData.feeAmount}
+                        onChange={(e) => handleInputChange('feeAmount', e.target.value)}
+                        className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    )}
+                  </div>
+                </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-4 pt-6">
-            <Button type="button" variant="outline" onClick={onClose} className="px-8">
-              Annuler
-            </Button>
-            <Button type="submit" className="px-8 bg-blue-600 hover:bg-blue-700 gap-2">
-              <Save className="w-4 h-4" />
-              Enregistrer la procédure
-            </Button>
-          </div>
+                {/* Numérisation */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="digitization"
+                      checked={formData.digitization}
+                      onCheckedChange={(checked) => handleInputChange('digitization', checked)}
+                    />
+                    <Label htmlFor="digitization">Numérisation de la procédure</Label>
+                  </div>
+
+                  {formData.digitization && (
+                    <div className="space-y-4 pl-6 border-l-2 border-muted">
+                      <div>
+                        <Label htmlFor="digitizationDate">Date de la numérisation</Label>
+                        <Input
+                          id="digitizationDate"
+                          type="date"
+                          value={formData.digitizationDate}
+                          onChange={(e) => handleInputChange('digitizationDate', e.target.value)}
+                          className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="electronicPortalLink">Lien du portail électronique</Label>
+                        <Input
+                          id="electronicPortalLink"
+                          type="url"
+                          value={formData.electronicPortalLink}
+                          onChange={(e) => handleInputChange('electronicPortalLink', e.target.value)}
+                          placeholder="https://..."
+                          className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="mobileAppLink">Lien de l'application mobile (si elle existe)</Label>
+                        <Input
+                          id="mobileAppLink"
+                          type="url"
+                          value={formData.mobileAppLink}
+                          onChange={(e) => handleInputChange('mobileAppLink', e.target.value)}
+                          placeholder="https://..."
+                          className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Modalités de retrait */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="thirdPartySubmission"
+                      checked={formData.thirdPartySubmission}
+                      onCheckedChange={(checked) => handleInputChange('thirdPartySubmission', checked)}
+                    />
+                    <Label htmlFor="thirdPartySubmission">Dépôt par une tierce personne</Label>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="withdrawalTime">Quand retirer l'acte ou le service administratif demandé</Label>
+                    <Input
+                      id="withdrawalTime"
+                      value={formData.withdrawalTime}
+                      onChange={(e) => handleInputChange('withdrawalTime', e.target.value)}
+                      placeholder="Délai de retrait"
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="withdrawalMethod">Comment retirer l'acte ou le service administratif demandé</Label>
+                    <Textarea
+                      id="withdrawalMethod"
+                      value={formData.withdrawalMethod}
+                      onChange={(e) => handleInputChange('withdrawalMethod', e.target.value)}
+                      placeholder="Modalités de retrait"
+                      rows={2}
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="documentValidity">Validité de l'acte ou du service administratif demandé</Label>
+                    <Input
+                      id="documentValidity"
+                      value={formData.documentValidity}
+                      onChange={(e) => handleInputChange('documentValidity', e.target.value)}
+                      placeholder="Durée de validité"
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Recours */}
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="hasAppeal"
+                      checked={formData.hasAppeal}
+                      onCheckedChange={(checked) => handleInputChange('hasAppeal', checked)}
+                    />
+                    <Label htmlFor="hasAppeal">Recours</Label>
+                  </div>
+
+                  {formData.hasAppeal && (
+                    <div className="space-y-4 pl-6 border-l-2 border-muted">
+                      <div>
+                        <Label htmlFor="appealLocation">Où déposer</Label>
+                        <Input
+                          id="appealLocation"
+                          value={formData.appealLocation}
+                          onChange={(e) => handleInputChange('appealLocation', e.target.value)}
+                          placeholder="Lieu de dépôt du recours"
+                          className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="appealDeadline">Les délais</Label>
+                        <Input
+                          id="appealDeadline"
+                          value={formData.appealDeadline}
+                          onChange={(e) => handleInputChange('appealDeadline', e.target.value)}
+                          placeholder="Délais de recours"
+                          className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="appealFees">Les frais</Label>
+                        <Input
+                          id="appealFees"
+                          value={formData.appealFees}
+                          onChange={(e) => handleInputChange('appealFees', e.target.value)}
+                          placeholder="Frais de recours"
+                          className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="legalAnchor" className="text-sm font-medium text-gray-700">Ancrage juridique</Label>
+                  <Textarea
+                    id="legalAnchor"
+                    value={formData.legalAnchor}
+                    onChange={(e) => handleInputChange('legalAnchor', e.target.value)}
+                    placeholder="Références légales et réglementaires..."
+                    rows={3}
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="userGuide">Guide d'utilisation à télécharger</Label>
+                    <Input
+                      id="userGuide"
+                      value={formData.userGuide}
+                      onChange={(e) => handleInputChange('userGuide', e.target.value)}
+                      placeholder="Lien vers le guide..."
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="downloadableForm">Formulaire à télécharger</Label>
+                    <Input
+                      id="downloadableForm"
+                      value={formData.downloadableForm}
+                      onChange={(e) => handleInputChange('downloadableForm', e.target.value)}
+                      placeholder="Lien vers le formulaire..."
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="faq">Questions fréquemment posées</Label>
+                  <Textarea
+                    id="faq"
+                    value={formData.faq}
+                    onChange={(e) => handleInputChange('faq', e.target.value)}
+                    placeholder="FAQ sur la procédure..."
+                    rows={3}
+                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Contact */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Contact</h3>
+                  
+                  <div>
+                    <Label htmlFor="contactAddress">Adresse</Label>
+                    <Textarea
+                      id="contactAddress"
+                      value={formData.contactAddress}
+                      onChange={(e) => handleInputChange('contactAddress', e.target.value)}
+                      placeholder="Adresse complète"
+                      rows={2}
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="contactPhone">N° Téléphone</Label>
+                      <Input
+                        id="contactPhone"
+                        value={formData.contactPhone}
+                        onChange={(e) => handleInputChange('contactPhone', e.target.value)}
+                        placeholder="Numéro de téléphone"
+                        className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="contactGreenNumber">N° Vert</Label>
+                      <Input
+                        id="contactGreenNumber"
+                        value={formData.contactGreenNumber}
+                        onChange={(e) => handleInputChange('contactGreenNumber', e.target.value)}
+                        placeholder="Numéro vert"
+                        className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="contactEmail">E-mail</Label>
+                    <Input
+                      id="contactEmail"
+                      type="email"
+                      value={formData.contactEmail}
+                      onChange={(e) => handleInputChange('contactEmail', e.target.value)}
+                      placeholder="Adresse e-mail"
+                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-4 pt-6">
+              <Button type="button" variant="outline" onClick={onClose} className="px-8">
+                Annuler
+              </Button>
+              <Button type="submit" className="px-8 bg-blue-600 hover:bg-blue-700 gap-2">
+                <Save className="w-4 h-4" />
+                Enregistrer la procédure
+              </Button>
+            </div>
           </form>
         )}
       </div>
