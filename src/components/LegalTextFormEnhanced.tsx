@@ -4,14 +4,13 @@ import { useToast } from '@/hooks/use-toast';
 import { LegalTextFormHeader } from './legal/LegalTextFormHeader';
 import { LegalTextFormInputMethodSelector } from './legal/LegalTextFormInputMethodSelector';
 import { LegalTextFormOCRSection } from './legal/LegalTextFormOCRSection';
-import { LegalTextFormContainer } from './legal/LegalTextFormContainer';
-import { LegalTextFormProvider } from './legal/LegalTextFormProvider';
-import { DynamicFormRenderer } from './forms/DynamicFormRenderer';
-import { useFormLibrary } from '@/hooks/useFormLibrary';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { FileText, Save, ArrowLeft, Wand2 } from 'lucide-react';
+import { getLegalTextTemplate, getAllLegalTextTypes } from '@/data/legalTextTemplates';
+import { LegalTextDynamicFieldRenderer } from './legal/LegalTextDynamicFieldRenderer';
 
 interface LegalTextFormEnhancedProps {
   onClose: () => void;
@@ -27,21 +26,19 @@ export function LegalTextFormEnhanced({
   initialInputMethod = 'manual'
 }: LegalTextFormEnhancedProps) {
   const { toast } = useToast();
-  const { getLegalTextFormForType } = useFormLibrary();
   const [inputMethod, setInputMethod] = useState<'manual' | 'ocr'>(initialInputMethod);
   const [showOCRScanner, setShowOCRScanner] = useState(false);
-  const [initialFormData, setInitialFormData] = useState<any>({});
   const [selectedTextType, setSelectedTextType] = useState<string>('');
-  const [dynamicFormData, setDynamicFormData] = useState<any>({});
+  const [formData, setFormData] = useState<any>({});
 
   useEffect(() => {
     if (initialOCRText) {
       import('@/utils/ocrFormFiller').then(({ extractLegalTextData }) => {
         const extractedData = extractLegalTextData(initialOCRText);
         console.log('Pré-remplissage avec OCR:', extractedData);
-        setInitialFormData(extractedData);
+        setFormData(extractedData);
       }).catch(() => {
-        setInitialFormData({ content: initialOCRText });
+        setFormData({ content: initialOCRText });
       });
     }
   }, [initialOCRText]);
@@ -50,42 +47,61 @@ export function LegalTextFormEnhanced({
     import('@/utils/ocrFormFiller').then(({ extractLegalTextData }) => {
       const extractedData = extractLegalTextData(extractedText);
       console.log('Données extraites par OCR:', extractedData);
-      setInitialFormData(extractedData);
+      setFormData(extractedData);
     }).catch(() => {
-      setInitialFormData({ content: extractedText });
+      setFormData({ content: extractedText });
     });
     setShowOCRScanner(false);
     setInputMethod('manual');
   };
 
   const handleAutoFill = () => {
-    // Ouvrir la modal d'auto-remplissage IA
     const event = new CustomEvent('open-ai-autofill', {
       detail: { context: 'legal-text' }
     });
     window.dispatchEvent(event);
   };
 
-  const handleFormSubmit = (data: any) => {
-    // Combiner les données du formulaire dynamique et du formulaire classique
-    const finalData = { ...data, ...dynamicFormData, textType: selectedTextType };
+  const handleFieldChange = (fieldName: string, value: any) => {
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalData = { ...formData, textType: selectedTextType };
+    console.log('Données finales du formulaire:', finalData);
     onSubmit(finalData);
     toast({
       title: "Texte juridique ajouté",
-      description: `Le texte "${data.title || data.nom || 'document'}" a été ajouté avec succès.`,
+      description: `Le texte juridique "${selectedTextType}" a été ajouté avec succès.`,
     });
   };
 
-  const handleDynamicFieldChange = (fieldName: string, value: any) => {
-    setDynamicFormData(prev => ({ ...prev, [fieldName]: value }));
-  };
-
-  const selectedTemplate = selectedTextType ? getLegalTextFormForType(selectedTextType) : null;
+  const selectedTemplate = selectedTextType ? getLegalTextTemplate(selectedTextType) : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 p-6">
       <div className="max-w-6xl mx-auto">
-        <LegalTextFormHeader onClose={onClose} onAutoFill={handleAutoFill} />
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={onClose} className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Retour
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <FileText className="w-8 h-8 text-emerald-600" />
+                Ajout d'un Texte Juridique Algérien
+              </h1>
+              <p className="text-gray-600 mt-1">Saisie complète d'un texte juridique avec formulaire adapté</p>
+            </div>
+          </div>
+          <Button onClick={handleAutoFill} variant="outline" className="gap-2 bg-purple-50 border-purple-200 hover:bg-purple-100">
+            <Wand2 className="w-4 h-4 text-purple-600" />
+            Auto-remplissage IA
+          </Button>
+        </div>
         
         <LegalTextFormInputMethodSelector 
           inputMethod={inputMethod}
@@ -101,9 +117,9 @@ export function LegalTextFormEnhanced({
         )}
 
         {inputMethod === 'manual' && (
-          <>
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Sélection du type de texte juridique */}
-            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm mb-8">
+            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-blue-50">
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="w-5 h-5 text-emerald-600" />
@@ -116,18 +132,26 @@ export function LegalTextFormEnhanced({
                     Sélectionnez le type de texte juridique *
                   </Label>
                   <Select value={selectedTextType} onValueChange={setSelectedTextType}>
-                    <SelectTrigger>
+                    <SelectTrigger className="border-gray-200 focus:border-emerald-500">
                       <SelectValue placeholder="Choisir un type de texte juridique" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="constitution">Constitution</SelectItem>
+                      <SelectItem value="accord-international">Accord International</SelectItem>
+                      <SelectItem value="convention-internationale">Convention Internationale</SelectItem>
+                      <SelectItem value="code">Code</SelectItem>
+                      <SelectItem value="loi-organique">Loi Organique</SelectItem>
                       <SelectItem value="loi">Loi</SelectItem>
                       <SelectItem value="ordonnance">Ordonnance</SelectItem>
-                      <SelectItem value="decret">Décret</SelectItem>
+                      <SelectItem value="decret-legislatif">Décret Législatif</SelectItem>
+                      <SelectItem value="decret-presidentiel">Décret Présidentiel</SelectItem>
+                      <SelectItem value="decret-executif">Décret Exécutif</SelectItem>
                       <SelectItem value="arrete">Arrêté</SelectItem>
-                      <SelectItem value="circulaire">Circulaire</SelectItem>
+                      <SelectItem value="arrete-interministerielle">Arrêté interministérielle</SelectItem>
+                      <SelectItem value="arrete-ministerielle">Arrêté ministérielle</SelectItem>
                       <SelectItem value="decision">Décision</SelectItem>
-                      <SelectItem value="constitution">Constitution</SelectItem>
-                      <SelectItem value="reglement">Règlement</SelectItem>
+                      <SelectItem value="circulaire">Circulaire</SelectItem>
+                      <SelectItem value="reglement">Règlements</SelectItem>
                       <SelectItem value="instruction">Instruction</SelectItem>
                     </SelectContent>
                   </Select>
@@ -137,22 +161,50 @@ export function LegalTextFormEnhanced({
 
             {/* Formulaire dynamique adapté au type */}
             {selectedTemplate && (
-              <DynamicFormRenderer
-                template={selectedTemplate}
-                formData={dynamicFormData}
-                onFieldChange={handleDynamicFieldChange}
-                className="mb-8"
-              />
+              <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                <CardHeader className="border-b border-gray-100 bg-gradient-to-r from-blue-50 to-emerald-50">
+                  <CardTitle className="text-xl text-gray-900">
+                    Formulaire : {selectedTemplate.name}
+                  </CardTitle>
+                  <p className="text-sm text-gray-600">
+                    Remplissez les champs spécifiques à ce type de texte juridique
+                  </p>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {selectedTemplate.fields.map((field) => (
+                      <div 
+                        key={field.name} 
+                        className={field.type === 'textarea' || field.type === 'dynamic-list' ? 'md:col-span-2' : ''}
+                      >
+                        <LegalTextDynamicFieldRenderer
+                          field={field}
+                          value={formData[field.name]}
+                          onChange={(value) => handleFieldChange(field.name, value)}
+                          formData={formData}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
-            {/* Formulaire classique */}
-            <LegalTextFormProvider initialData={initialFormData}>
-              <LegalTextFormContainer 
-                onClose={onClose}
-                onSubmit={handleFormSubmit}
-              />
-            </LegalTextFormProvider>
-          </>
+            {/* Actions */}
+            <div className="flex justify-end gap-4 pt-6">
+              <Button type="button" variant="outline" onClick={onClose} className="px-8">
+                Annuler
+              </Button>
+              <Button 
+                type="submit" 
+                className="px-8 bg-emerald-600 hover:bg-emerald-700 gap-2"
+                disabled={!selectedTextType}
+              >
+                <Save className="w-4 h-4" />
+                Enregistrer le texte juridique
+              </Button>
+            </div>
+          </form>
         )}
       </div>
     </div>
