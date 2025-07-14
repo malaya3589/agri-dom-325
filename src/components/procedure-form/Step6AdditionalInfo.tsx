@@ -2,6 +2,8 @@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Upload } from 'lucide-react';
 import { FormStepProps } from './types';
 
 export function Step6AdditionalInfo({ form }: FormStepProps) {
@@ -10,6 +12,34 @@ export function Step6AdditionalInfo({ form }: FormStepProps) {
       <div className="text-center mb-6">
         <h3 className="text-xl font-semibold mb-2">Informations complémentaires</h3>
         <p className="text-gray-600">Ajoutez les derniers détails</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="legal-basis">Ancrage juridique</Label>
+        <Textarea
+          id="legal-basis"
+          placeholder="Références juridiques (lois, décrets, arrêtés...)"
+          {...form.register('legalBasis')}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <Label>Guide d'utilisation à télécharger</Label>
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+            <p className="text-blue-600 cursor-pointer mb-2">Choisir pour télécharger</p>
+            <Button variant="outline" size="sm">Sélectionner un fichier</Button>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <Label>Formulaire à télécharger</Label>
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+            <p className="text-blue-600 cursor-pointer mb-2">Choisir pour télécharger</p>
+            <Button variant="outline" size="sm">Sélectionner un fichier</Button>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-2">

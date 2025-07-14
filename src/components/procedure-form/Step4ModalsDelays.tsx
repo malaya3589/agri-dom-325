@@ -24,31 +24,31 @@ export function Step4ModalsDelays({ form }: FormStepProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="submissionLocation">Administration concernée</Label>
+          <Label htmlFor="responsibleAdmin">Administration concernée</Label>
           <Input
-            id="submissionLocation"
+            id="responsibleAdmin"
             placeholder="Administration responsable"
-            {...form.register('submissionLocation')}
+            {...form.register('responsibleAdmin')}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="validityStartDate">Validité de la procédure - Du</Label>
+          <Label htmlFor="validityStart">Validité de la procédure - Du</Label>
           <Input
-            id="validityStartDate"
+            id="validityStart"
             type="date"
-            {...form.register('validityStartDate')}
+            {...form.register('validityStart')}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="validityEndDate">Au</Label>
+          <Label htmlFor="validityEnd">Au</Label>
           <Input
-            id="validityEndDate"
+            id="validityEnd"
             type="date"
-            {...form.register('validityEndDate')}
+            {...form.register('validityEnd')}
           />
         </div>
       </div>
@@ -90,11 +90,11 @@ export function Step4ModalsDelays({ form }: FormStepProps) {
         </RadioGroup>
         
         <div className="space-y-2">
-          <Label htmlFor="feeAmount">Coût (si payant)</Label>
+          <Label htmlFor="cost">Coût (si payant)</Label>
           <Input
-            id="feeAmount"
+            id="cost"
             placeholder="Ex: 5000 DA"
-            {...form.register('feeAmount')}
+            {...form.register('cost')}
           />
         </div>
       </div>

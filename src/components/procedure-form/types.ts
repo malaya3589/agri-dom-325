@@ -1,93 +1,69 @@
-
 import { UseFormReturn } from 'react-hook-form';
 
 export interface ProcedureStep {
   id: string;
   title: string;
   description: string;
-}
-
-export interface ProcedureFormData {
-  name: string;
-  description: string;
-  type: string;
-  procedureCategory: string;
-  sector: string;
-  sectorAdministration: string;
-  steps: string[];
-  conditions: string[];
-  requiredDocuments: string[];
-  requiredDocumentsType: 'existing' | 'text';
-  complementaryDocuments: string[];
-  complementaryDocumentsType: 'existing' | 'text';
-  targetCategory: string;
-  submissionLocation: string;
-  responsibleAdmin: string;
-  validityType: 'periodic' | 'open';
-  validityStart: string;
-  validityEnd: string;
-  validityStartDate: string;
-  validityEndDate: string;
-  processingDuration: string;
-  cost: string;
-  feeType: 'gratuit' | 'payant';
-  feeAmount: string;
-  digitization: boolean;
-  digitalProcedure: boolean;
-  digitizationDate: string;
-  electronicPortalLink: string;
-  mobileAppLink: string;
-  thirdPartySubmission: boolean;
-  withdrawalTime: string;
-  withdrawalMethod: string;
-  withdrawalConditions: string;
-  withdrawalMethods: string;
-  documentValidity: string;
-  validityDuration: string;
-  hasAppeal: boolean;
-  appealPossible: boolean;
-  appealLocation: string;
-  appealDeadline: string;
-  appealFees: string;
-  legalBasis: string[];
-  userGuide: File | null;
-  downloadableForm: File | null;
-  frequentQuestions: string;
-  contactAddress: string;
-  phoneNumber: string;
-  greenNumber: string;
-  email: string;
+  conditions?: string;
 }
 
 export interface FormStepProps {
-  form: UseFormReturn<ProcedureFormData>;
+  form: UseFormReturn<any>;
   procedureSteps?: ProcedureStep[];
   setProcedureSteps?: (steps: ProcedureStep[]) => void;
   requiredDocs?: string[];
   setRequiredDocs?: (docs: string[]) => void;
   complementaryDocs?: string[];
   setComplementaryDocs?: (docs: string[]) => void;
-  steps?: string[];
-  setSteps?: (steps: string[]) => void;
-  conditions?: string[];
-  setConditions?: (conditions: string[]) => void;
-  legalBasis?: string[];
-  setLegalBasis?: (basis: string[]) => void;
 }
 
+export const defaultFormValues = {
+  // Step 1
+  title: '',
+  description: '',
+  targetAudience: '',
+  category: '',
+  institution: '',
+  
+  // Step 2
+  conditions: '',
+  
+  // Step 3
+  requiredDocuments: '',
+  complementaryDocuments: '',
+  
+  // Step 4
+  processingTime: '',
+  cost: '',
+  paymentMethods: '',
+  
+  // Step 5
+  digitalProcedure: false,
+  thirdPartySubmission: false,
+  withdrawalConditions: '',
+  withdrawalMethods: '',
+  validityDuration: '',
+  appealPossible: false,
+  
+  // Step 6
+  legalBasis: '',
+  frequentQuestions: '',
+  contactAddress: '',
+  phoneNumber: '',
+  email: '',
+  greenNumber: ''
+};
+
 export const targetCategories = [
-  "Citoyen",
-  "Administration",
-  "Entreprises",
-  "Investisseur",
-  "Associations"
+  'Citoyens',
+  'Entreprises',
+  'Administrations',
+  'Associations'
 ];
 
 export const procedureTypes = [
-  "Autorisation",
-  "Certificat",
-  "Licence",
-  "Permis",
-  "Déclaration",
-  "Enregistrement"
+  'Demande',
+  'Déclaration',
+  'Autorisation',
+  'Certificat'
 ];
